@@ -1,6 +1,7 @@
 # FastAPI Project
 
-A simple FastAPI project with a single endpoint that returns a "hello world" message.
+A simple FastAPI project with a single endpoint that returns a "hello world"
+message.
 
 ## Prerequisites
 
@@ -21,9 +22,9 @@ A simple FastAPI project with a single endpoint that returns a "hello world" mes
    ```
 
 3. The API will be available at:
-   - Main endpoint: http://localhost:8000/
-   - Interactive API docs: http://localhost:8000/docs
-   - Alternative API docs: http://localhost:8000/redoc
+    - Main endpoint: http://localhost:8000/
+    - Interactive API docs: http://localhost:8000/docs
+    - Alternative API docs: http://localhost:8000/redoc
 
 4. To stop the service:
    ```bash
@@ -32,7 +33,8 @@ A simple FastAPI project with a single endpoint that returns a "hello world" mes
 
 ## Development
 
-The project uses UV for dependency management inside the Docker container. Dependencies are defined in `pyproject.toml`.
+The project uses UV for dependency management inside the Docker container.
+Dependencies are defined in `pyproject.toml`.
 
 To add new dependencies:
 
@@ -51,4 +53,5 @@ To add new dependencies:
    docker compose restart fastapi
    ```
 
-The dependencies will be automatically installed when the container starts thanks to the `uv sync` command in the startup process.
+The dependencies will be automatically installed when the container starts
+thanks to the `uv sync` command in the startup process.
