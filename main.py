@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, validator, ValidationError
+from dtos import TodoCreate
 from datetime import date, datetime
 from typing import Optional
 
@@ -9,11 +9,13 @@ app = FastAPI()
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(request: Request,
+                                       exc: RequestValidationError):
     errors = {}
 
     for error in exc.errors():
-        field_name = error["loc"][-1]  # Get the field name (last item in location)
+        field_name = error["loc"][
+            -1]  # Get the field name (last item in location)
         error_msg = error["msg"]
 
         # Remove "Value error, " prefix if present
@@ -28,39 +30,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=400,
         content={"errors": errors}
     )
-
-
-class TodoCreate(BaseModel):
-    title: str = Field(
-        ...,
-        min_length=3,
-        max_length=20,
-        description="Title of the TODO task"
-    )
-    description: Optional[str] = Field(
-        None,
-        min_length=3,
-        max_length=100,
-        description="Description of the TODO task"
-    )
-    due_date: str = Field(
-        ...,
-        description="Due date in DD.MM.YYYY format"
-    )
-
-    @validator('due_date')
-    def validate_due_date(cls, v):
-        try:
-            # Parse the date from DD.MM.YYYY format
-            parsed_date = datetime.strptime(v, "%d.%m.%Y").date()
-        except ValueError:
-            raise ValueError('Date must be in DD.MM.YYYY format')
-
-        # Check if the date is in the future
-        if parsed_date <= date.today():
-            raise ValueError('Due date must be in the future')
-
-        return v
 
 
 @app.get("/")
