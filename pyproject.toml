@@ -5,7 +5,9 @@ description = "A simple FastAPI project"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.16.5",
     "fastapi>=0.104.0",
+    "sqlalchemy>=2.0.43",
     "uvicorn[standard]>=0.24.0",
 ]
 

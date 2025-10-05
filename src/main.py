@@ -1,8 +1,11 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from src.dtos import TodoCreate
-from datetime import date, datetime
+from src.database import SessionLocal, engine, get_db
+from src.models import Todo
+from sqlalchemy.orm import Session
+from datetime import datetime
 from typing import Optional
 
 app = FastAPI()
@@ -13,20 +16,14 @@ async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ):
     errors = {}
-
     for error in exc.errors():
-        field_name = error["loc"][
-            -1]  # Get the field name (last item in location)
+        field_name = error["loc"][-1]
         error_msg = error["msg"]
-
-        # Remove "Value error, " prefix if present
         if error_msg.startswith("Value error, "):
             error_msg = error_msg[13:]
-
         if field_name not in errors:
             errors[field_name] = []
         errors[field_name].append(error_msg)
-
     return JSONResponse(
         status_code=400,
         content={"errors": errors}
@@ -39,20 +36,15 @@ def read_root():
 
 
 @app.post("/todos")
-def create_todo(todo: TodoCreate):
-    # Format the response message
-    description_text = (
-        f"Description: {todo.description}"
-        if todo.description
-        else ""
+def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
+    due_date = datetime.strptime(todo.due_date, "%d.%m.%Y").date()
+    db_todo = Todo(
+        title=todo.title,
+        description=todo.description,
+        due_date=due_date
     )
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
 
-    message = (
-        f"You've successfully created a new TODO task labeled: "
-        f"\"{todo.title}\". Make sure you finish it by {todo.due_date}!"
-    )
-
-    return {
-        "message": message,
-        "details": description_text
-    }
+    return db_todo
