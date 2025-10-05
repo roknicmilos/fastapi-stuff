@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from dtos import TodoCreate
+from src.dtos import TodoCreate
 from datetime import date, datetime
 from typing import Optional
 
@@ -9,8 +9,9 @@ app = FastAPI()
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request,
-                                       exc: RequestValidationError):
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
     errors = {}
 
     for error in exc.errors():
