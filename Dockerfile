@@ -11,5 +11,7 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Sync dependencies and run the application
-CMD ["sh", "-c", "uv sync && uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"]
+# Make entrypoint.sh executable
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
