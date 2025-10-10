@@ -2,11 +2,10 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from src.dtos import TodoCreate
-from src.database import SessionLocal, engine, get_db
+from src.database import get_async_db
 from src.models import Todo
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-from typing import Optional
 
 app = FastAPI()
 
@@ -36,7 +35,9 @@ def read_root():
 
 
 @app.post("/todos")
-def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
+async def create_todo(
+    todo: TodoCreate, db: AsyncSession = Depends(get_async_db)
+):
     due_date = datetime.strptime(todo.due_date, "%d.%m.%Y").date()
     db_todo = Todo(
         title=todo.title,
@@ -44,7 +45,7 @@ def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
         due_date=due_date
     )
     db.add(db_todo)
-    db.commit()
-    db.refresh(db_todo)
+    await db.commit()
+    await db.refresh(db_todo)
 
     return db_todo
