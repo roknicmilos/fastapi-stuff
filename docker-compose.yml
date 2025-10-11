@@ -9,3 +9,27 @@ services:
       - .:/app
     environment:
       - PYTHONPATH=/app
+      - SQLALCHEMY_DATABASE_URL=postgresql://todos:todos@db:5432/todos
+      - ASYNC_SQLALCHEMY_DATABASE_URL=postgresql+asyncpg://todos:todos@db:5432/todos
+      - DB_HOST=db
+      - DB_USER=todos
+      - DB_PASSWORD=todos
+      - DB_NAME=todos
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: todos
+      POSTGRES_PASSWORD: todos
+      POSTGRES_DB: todos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
