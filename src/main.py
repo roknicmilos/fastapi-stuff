@@ -1,4 +1,8 @@
 import asyncio
+import json
+import os
+
+from redis.asyncio import Redis
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -11,6 +15,12 @@ from sqlalchemy import select
 from datetime import datetime
 
 app = FastAPI()
+
+redis = Redis.from_url(
+    os.getenv("REDIS_URL"),
+    encoding="utf-8",
+    decode_responses=True
+)
 
 
 @app.exception_handler(RequestValidationError)
@@ -52,10 +62,21 @@ async def list_todos(db: AsyncSession = Depends(get_async_db)):
     "/todos/{todo_id}",
     response_model=TodoOut
 )
-async def get_todo(
+async def get_expensive_todo(
     todo_id: int, db: AsyncSession = Depends(get_async_db)
 ):
-    """Return a single todo by ID or raise 404 if not found."""
+    """
+    Return a single todo by ID or raise 404 if not found.
+    This endpoint simulates an expensive operation by sleeping 
+    for particular amount of seconds.
+    """
+    cache_key = f"todo:{todo_id}"
+    cached_todo = await redis.get(cache_key)
+    if cached_todo:
+        # cached_todo is a JSON string (we stored JSON); parse and validate
+        data = json.loads(cached_todo)
+        return TodoOut.model_validate(data)
+
     result = await db.execute(
         select(Todo).where(Todo.id == todo_id)
     )
@@ -64,6 +85,11 @@ async def get_todo(
         raise HTTPException(status_code=404, detail="Todo not found")
 
     await asyncio.sleep(5)
+
+    # Convert ORM model to TodoOut and store JSON in Redis
+    todo_out = TodoOut.model_validate(todo)
+    await redis.setex(cache_key, 20, todo_out.model_dump_json())
+
     return todo
 
 
