@@ -1,4 +1,4 @@
-import time
+import asyncio
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -63,7 +63,7 @@ async def get_todo(
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
 
-    time.sleep(5)
+    await asyncio.sleep(5)
     return todo
 
 

@@ -13,5 +13,7 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
 ]
 
-[tool.uv]
-dev-dependencies = []
+[project.dependency-groups]
+# Use dependency-groups.dev instead of tool.uv.dev-dependencies
+# This group is kept empty for now; add development-only deps here.
+dev = []
