@@ -1,10 +1,13 @@
+import time
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from src.dtos import TodoCreate
+from typing import List
+from src.dtos import TodoCreate, TodoOut
 from src.database import get_async_db
 from src.models import Todo
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from datetime import datetime
 
 app = FastAPI()
@@ -32,6 +35,36 @@ async def validation_exception_handler(
 @app.get("/")
 def read_root():
     return {"message": "hello world"}
+
+
+@app.get(
+    "/todos",
+    response_model=List[TodoOut]
+)
+async def list_todos(db: AsyncSession = Depends(get_async_db)):
+    """Return all todos as a list of TodoOut models."""
+    result = await db.execute(select(Todo))
+    todos = result.scalars().all()
+    return todos
+
+
+@app.get(
+    "/todos/{todo_id}",
+    response_model=TodoOut
+)
+async def get_todo(
+    todo_id: int, db: AsyncSession = Depends(get_async_db)
+):
+    """Return a single todo by ID or raise 404 if not found."""
+    result = await db.execute(
+        select(Todo).where(Todo.id == todo_id)
+    )
+    todo = result.scalar_one_or_none()
+    if todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    time.sleep(5)
+    return todo
 
 
 @app.post("/todos")
