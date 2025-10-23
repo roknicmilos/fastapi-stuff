@@ -16,9 +16,9 @@ message.
    cd fastapi-stuff
    ```
 
-2. Build and run the FastAPI service:
+2. Run the FastAPI service (in detached mode):
    ```bash
-   docker compose up --build
+   docker compose up -d
    ```
 
 3. The API will be available at:
