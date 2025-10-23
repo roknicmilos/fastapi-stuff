@@ -3,15 +3,21 @@ import json
 import os
 
 from redis.asyncio import Redis
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    Depends,
+)
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from typing import List
 from src.dtos import TodoCreate, TodoOut
 from src.database import get_async_db
 from src.models import Todo
+from src.ws import ws_manager, router as ws_router
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from datetime import datetime
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(ws_router)
 
 redis = Redis.from_url(
     os.getenv("REDIS_URL"),
@@ -68,7 +76,7 @@ def read_root():
 )
 async def list_todos(db: AsyncSession = Depends(get_async_db)):
     """Return all todos as a list of TodoOut models."""
-    result = await db.execute(select(Todo))
+    result = await db.execute(select(Todo).order_by(desc(Todo.created_at)))
     todos = result.scalars().all()
     return todos
 
@@ -122,4 +130,6 @@ async def create_todo(
     await db.commit()
     await db.refresh(db_todo)
 
+    todo_out = TodoOut.model_validate(db_todo)
+    await ws_manager.broadcast(todo_out.model_dump_json())
     return db_todo

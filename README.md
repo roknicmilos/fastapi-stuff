@@ -61,3 +61,28 @@ To add new dependencies to the backend:
 
 The dependencies will be automatically installed when the container starts
 thanks to the `uv sync` command in the startup process.
+
+## Database Migrations
+
+This project uses Alembic to manage database migrations.
+
+### Generating a New Migration
+
+When you make changes to the SQLAlchemy models (e.g., in `backend/src/models.py`),
+you need to generate a new migration script.
+
+1.  Run the following command to automatically generate a migration file:
+    ```bash
+    docker compose run --rm fastapi alembic revision --autogenerate -m "Your migration message"
+    ```
+    Replace `"Your migration message"` with a short, descriptive message about the changes.
+
+2.  A new migration file will be created in `backend/alembic/versions/`.
+
+### Applying Migrations
+
+To apply the latest migrations to the database, run:
+```bash
+docker compose run --rm fastapi alembic upgrade head
+```
+This command should be run after generating a new migration or when setting up the project for the first time.

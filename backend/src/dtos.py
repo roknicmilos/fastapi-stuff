@@ -52,6 +52,9 @@ class TodoOut(BaseModel):
     due_date: date = Field(
         ..., description="Due date as a date object"
     )
+    created_at: datetime = Field(
+        ..., description="Timestamp of when the TODO was created"
+    )
 
     class Config:
         from_attributes = True
