@@ -1,10 +1,10 @@
 services:
   fastapi:
-    build: .
+    build: ./backend
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
       - SQLALCHEMY_DATABASE_URL=postgresql://todos:todos@db:5432/todos
@@ -44,6 +44,15 @@ services:
       timeout: 2s
       retries: 5
       start_period: 5s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - fastapi
 
 volumes:
   postgres_data:
