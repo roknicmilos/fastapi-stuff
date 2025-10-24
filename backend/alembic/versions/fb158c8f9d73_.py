@@ -1,8 +1,8 @@
-"""create_todos
+"""empty message
 
-Revision ID: 8f741e92be5e
+Revision ID: fb158c8f9d73
 Revises: 
-Create Date: 2025-10-05 15:02:33.427570
+Create Date: 2025-10-24 13:55:49.236704
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8f741e92be5e'
+revision: str = 'fb158c8f9d73'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +26,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(length=20), nullable=False),
     sa.Column('description', sa.String(length=100), nullable=True),
     sa.Column('due_date', sa.Date(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_todos_id'), 'todos', ['id'], unique=False)
