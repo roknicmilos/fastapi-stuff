@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 
 from src.ws import router as ws_router
 from src.todos.router import router as todos_router
+from src.users.router import router as users_router
+from src.chat.router import router as chat_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,6 +26,8 @@ app.add_middleware(
 
 app.include_router(ws_router)
 app.include_router(todos_router)
+app.include_router(users_router)
+app.include_router(chat_router)
 
 
 @app.exception_handler(RequestValidationError)

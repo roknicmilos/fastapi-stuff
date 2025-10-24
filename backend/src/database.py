@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker
 )
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 from typing import Generator, AsyncGenerator
 
 SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
@@ -27,7 +27,8 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False
 )
 
-Base = declarative_base()
+# Import Base from the shared base model (contains id and created_at)
+from src.models import Base
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)

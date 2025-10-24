@@ -11,6 +11,8 @@ from src.database import get_async_db
 from src.todos.models import Todo
 from src.todos.dtos import TodoCreate, TodoOut
 from src.ws import ws_manager
+from src.users.router import router as users_router
+from src.chat.router import router as chat_router
 
 router = APIRouter()
 
@@ -66,4 +68,3 @@ async def create_todo(todo: TodoCreate, db: AsyncSession = Depends(get_async_db)
     todo_out = TodoOut.model_validate(db_todo)
     await ws_manager.broadcast(todo_out.model_dump_json())
     return db_todo
-

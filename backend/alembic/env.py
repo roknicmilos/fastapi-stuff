@@ -19,6 +19,8 @@ if config.config_file_name is not None:
 from src.database import Base
 target_metadata = Base.metadata
 from src.todos import models
+from src.users import models
+from src.chat import models
 
 
 # other values from the config, defined by the needs of env.py,
