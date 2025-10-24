@@ -1,0 +1,5 @@
+1. Add messages to Conversation model
+2. Implement route for fetching all messages
+3. start_conversation: accept exact two fields (user_id, agent_id)
+4. start_conversation: When conversation is crated, route should return 201, and when conversation already exists, return 200
+5. get_conversation_by_users: accept usernames instead of ids, and it should use 2 different query parameters (user1, user2)
