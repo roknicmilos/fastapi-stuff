@@ -10,3 +10,4 @@ class Todo(Base):
     description = Column(String(100), nullable=True)
     due_date = Column(Date, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
