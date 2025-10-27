@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo App</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Chat - Conversation 1 ↔ 2</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Todo App</h1>
-    <ul id="todo-list"></ul>
+    <div class="app-shell">
+        <div class="chat-panel">
+            <header class="chat-header">
+                <div class="chat-title">Conversation: User 1 ↔ User 2</div>
+                <div class="chat-sub">Real-time messages (read-only)</div>
+            </header>
+
+            <main class="chat-main">
+                <ul id="message-list" class="messages" aria-live="polite"></ul>
+            </main>
+
+            <footer class="chat-footer">
+                <small>Messages are read-only here — use Postman to send messages.</small>
+            </footer>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -12,6 +12,7 @@ from src.chat.dtos import (
     MessageCreate,
 )
 from src.users.models import User
+from src.ws import ws_manager  # new: import websocket manager to broadcast messages
 
 router = APIRouter()
 
@@ -96,6 +97,15 @@ async def send_message(
     db.add(db_msg)
     await db.commit()
     await db.refresh(db_msg)
+
+    # Broadcast the new message to any connected websocket clients so frontends can
+    # update in real time. Use the MessageOut DTO for consistent JSON shape.
+    try:
+        message_out = MessageOut.model_validate(db_msg)
+        await ws_manager.broadcast(message_out.model_dump_json())
+    except Exception:
+        # broadcasting failure should not prevent API response; ignore errors here
+        pass
 
     return db_msg
 
