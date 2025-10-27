@@ -44,6 +44,14 @@ async def start_conversation(
     return db_conv
 
 
+@router.get("/conversations", response_model=list[ConversationOut])
+async def list_conversations(db: AsyncSession = Depends(get_async_db)):
+    """Return all conversations."""
+    result = await db.execute(select(Conversation))
+    conversations = result.scalars().all()
+    return conversations
+
+
 @router.get("/conversations/by_users", response_model=ConversationOut)
 async def get_conversation_by_users(
     user_ids: list[int] = Query(
@@ -72,4 +80,3 @@ async def get_conversation_by_users(
     if conv is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conv
-
