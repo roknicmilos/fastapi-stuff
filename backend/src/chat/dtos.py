@@ -24,3 +24,24 @@ class ConversationOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class MessageOut(BaseModel):
+    id: int
+    conversation_id: int
+    user_id: int
+    text: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# New model: conversation with nested messages (messages ordered newest->oldest)
+class ConversationWithMessagesOut(BaseModel):
+    id: int
+    user_a_id: int
+    user_b_id: int
+    created_at: datetime
+    messages: list[MessageOut]
+
+    model_config = {"from_attributes": True}

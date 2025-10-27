@@ -3,8 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.database import get_async_db
-from src.chat.models import Conversation
-from src.chat.dtos import ConversationOut, ConversationStart
+from src.chat.models import Conversation, Message
+from src.chat.dtos import (
+    ConversationOut,
+    ConversationStart,
+    MessageOut,
+    ConversationWithMessagesOut
+)
 from src.users.models import User
 
 router = APIRouter()
@@ -16,8 +21,7 @@ async def start_conversation(
     response: Response,
     db: AsyncSession = Depends(get_async_db)
 ):
-    # Accept exactly two explicit fields: user_id and agent_id
-    user_a_id, user_b_id = sorted([conv.user_id, conv.agent_id])
+    user_a_id, user_b_id = sorted([conv.user_a_id, conv.user_b_id])
 
     # Verify both users exist
     result = await db.execute(select(User).where(
@@ -60,7 +64,9 @@ async def list_conversations(db: AsyncSession = Depends(get_async_db)):
     return conversations
 
 
-@router.get("/conversations/by_users", response_model=ConversationOut)
+@router.get(
+    "/conversations/by_users", response_model=ConversationWithMessagesOut
+)
 async def get_conversation_by_users(
     user_a: str = Query(
         ..., description="Username of the first user (user_a)"
@@ -70,11 +76,8 @@ async def get_conversation_by_users(
     ),
     db: AsyncSession = Depends(get_async_db)
 ):
-    """Find a conversation by two usernames provided as separate query params.
-
-    The two usernames must be different. The users are looked up by username
-    to obtain their IDs; IDs are then ordered and used to query the Conversation
-    table (same ordering convention used elsewhere).
+    """
+    Find a conversation by two usernames provided as separate query params.
     """
     if user_a == user_b:
         raise HTTPException(
@@ -90,4 +93,19 @@ async def get_conversation_by_users(
     conversation = result.scalar_one_or_none()
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return conversation
+
+    # Fetch messages for this conversation, newest first
+    result = await db.execute(
+        select(Message).where(
+            Message.conversation_id == conversation.id
+        ).order_by(Message.created_at.desc())
+    )
+    messages = result.scalars().all()
+
+    return ConversationWithMessagesOut(
+        id=conversation.id,
+        user_a_id=conversation.user_a_id,
+        user_b_id=conversation.user_b_id,
+        created_at=conversation.created_at,
+        messages=messages,
+    )
