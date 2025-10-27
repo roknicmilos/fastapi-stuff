@@ -8,7 +8,8 @@ from src.chat.dtos import (
     ConversationOut,
     ConversationStart,
     MessageOut,
-    ConversationWithMessagesOut
+    ConversationWithMessagesOut,
+    MessageCreate,
 )
 from src.users.models import User
 
@@ -54,6 +55,49 @@ async def start_conversation(
     # Return 201 when newly created
     response.status_code = status.HTTP_201_CREATED
     return db_conv
+
+
+@router.post("/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
+async def send_message(
+    msg: MessageCreate,
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Create a new message in a conversation.
+
+    Validates that the conversation exists, the user exists, and the user is a participant
+    in the conversation. Returns the created Message (201).
+    """
+    # Verify conversation exists
+    result = await db.execute(select(Conversation).where(
+        Conversation.id == msg.conversation_id)
+    )
+    conv = result.scalar_one_or_none()
+    if conv is None:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Verify user exists
+    result = await db.execute(select(User).where(User.id == msg.user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Verify user is a participant of the conversation
+    if msg.user_id not in (conv.user_a_id, conv.user_b_id):
+        raise HTTPException(
+            status_code=403,
+            detail="User is not a participant in the conversation"
+        )
+
+    db_msg = Message(
+        conversation_id=msg.conversation_id,
+        user_id=msg.user_id,
+        text=msg.text
+    )
+    db.add(db_msg)
+    await db.commit()
+    await db.refresh(db_msg)
+
+    return db_msg
 
 
 @router.get("/conversations", response_model=list[ConversationOut])

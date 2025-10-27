@@ -45,3 +45,19 @@ class ConversationWithMessagesOut(BaseModel):
     messages: list[MessageOut]
 
     model_config = {"from_attributes": True}
+
+
+# New DTO for creating a message: requires conversation_id, user_id, and non-empty text
+class MessageCreate(BaseModel):
+    conversation_id: int
+    user_id: int
+    text: str
+
+    @model_validator(mode="after")
+    def text_must_not_be_empty(self):
+        # strip whitespace and ensure not empty
+        if not isinstance(self.text, str) or not self.text.strip():
+            raise ValueError("text must be a non-empty string")
+        # normalize text (trim)
+        self.text = self.text.strip()
+        return self
