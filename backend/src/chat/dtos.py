@@ -1,18 +1,20 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, model_validator
 from datetime import datetime
-from typing import List
 
 
-class ConversationCreate(BaseModel):
-    user_ids: List[int] = Field(..., description="Exactly two user IDs")
+class ConversationStart(BaseModel):
+    user_a_id: int
+    user_b_id: int
 
-    @validator("user_ids")
-    def validate_two_users(cls, v):
-        if not isinstance(v, list) or len(v) != 2:
-            raise ValueError("Exactly two user IDs must be provided")
-        if v[0] == v[1]:
+    @model_validator(mode="after")
+    def users_must_be_different(self):
+        # both fields are typed so None should not normally appear,
+        # but keep an explicit check to provide a clear error message.
+        if self.user_a_id is None or self.user_b_id is None:
+            raise ValueError("Both user_a_id and user_b_id must be provided")
+        if self.user_a_id == self.user_b_id:
             raise ValueError("Conversation must be between two different users")
-        return v
+        return self
 
 
 class ConversationOut(BaseModel):
@@ -21,6 +23,4 @@ class ConversationOut(BaseModel):
     user_b_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
+    model_config = {"from_attributes": True}

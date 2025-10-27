@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.database import get_async_db
 from src.chat.models import Conversation
-from src.chat.dtos import ConversationCreate, ConversationOut
+from src.chat.dtos import ConversationOut, ConversationStart
 from src.users.models import User
 
 router = APIRouter()
@@ -12,9 +12,12 @@ router = APIRouter()
 
 @router.post("/conversations", response_model=ConversationOut)
 async def start_conversation(
-    conv: ConversationCreate, db: AsyncSession = Depends(get_async_db)
+    conv: ConversationStart,
+    response: Response,
+    db: AsyncSession = Depends(get_async_db)
 ):
-    user_a_id, user_b_id = sorted(conv.user_ids)
+    # Accept exactly two explicit fields: user_id and agent_id
+    user_a_id, user_b_id = sorted([conv.user_id, conv.agent_id])
 
     # Verify both users exist
     result = await db.execute(select(User).where(
@@ -35,12 +38,17 @@ async def start_conversation(
     )
     existing = result.scalar_one_or_none()
     if existing:
+        # Return 200 when conversation already exists
+        response.status_code = status.HTTP_200_OK
         return existing
 
     db_conv = Conversation(user_a_id=user_a_id, user_b_id=user_b_id)
     db.add(db_conv)
     await db.commit()
     await db.refresh(db_conv)
+
+    # Return 201 when newly created
+    response.status_code = status.HTTP_201_CREATED
     return db_conv
 
 
@@ -54,29 +62,32 @@ async def list_conversations(db: AsyncSession = Depends(get_async_db)):
 
 @router.get("/conversations/by_users", response_model=ConversationOut)
 async def get_conversation_by_users(
-    user_ids: list[int] = Query(
-        ..., description="Provide exactly two user ids"
+    user_a: str = Query(
+        ..., description="Username of the first user (user_a)"
+    ),
+    user_b: str = Query(
+        ..., description="Username of the second user (user_b)"
     ),
     db: AsyncSession = Depends(get_async_db)
 ):
-    if len(user_ids) != 2:
-        raise HTTPException(
-            status_code=400, detail="Exactly two user ids must be provided"
-        )
-    if user_ids[0] == user_ids[1]:
-        raise HTTPException(
-            status_code=400, detail="User ids must be different"
-        )
+    """Find a conversation by two usernames provided as separate query params.
 
-    user_a_id, user_b_id = sorted(user_ids)
+    The two usernames must be different. The users are looked up by username
+    to obtain their IDs; IDs are then ordered and used to query the Conversation
+    table (same ordering convention used elsewhere).
+    """
+    if user_a == user_b:
+        raise HTTPException(
+            status_code=400, detail="Usernames must be different"
+        )
 
     result = await db.execute(
         select(Conversation).where(
-            Conversation.user_a_id == user_a_id,
-            Conversation.user_b_id == user_b_id,
+            Conversation.user_a_id == int(user_a),
+            Conversation.user_b_id == int(user_b),
         )
     )
-    conv = result.scalar_one_or_none()
-    if conv is None:
+    conversation = result.scalar_one_or_none()
+    if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    return conv
+    return conversation
