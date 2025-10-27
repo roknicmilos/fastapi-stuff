@@ -12,7 +12,7 @@ from src.chat.dtos import (
     MessageCreate,
 )
 from src.users.models import User
-from src.ws import ws_manager  # new: import websocket manager to broadcast messages
+from src.ws import ws_manager
 
 router = APIRouter()
 
@@ -58,15 +58,20 @@ async def start_conversation(
     return db_conv
 
 
-@router.post("/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/messages",
+    response_model=MessageOut,
+    status_code=status.HTTP_201_CREATED
+)
 async def send_message(
     msg: MessageCreate,
     db: AsyncSession = Depends(get_async_db)
 ):
     """Create a new message in a conversation.
 
-    Validates that the conversation exists, the user exists, and the user is a participant
-    in the conversation. Returns the created Message (201).
+    Validates that the conversation exists, the user exists,
+    and the user is a participant in the conversation.
+    Returns the created Message (201).
     """
     # Verify conversation exists
     result = await db.execute(select(Conversation).where(
@@ -98,13 +103,14 @@ async def send_message(
     await db.commit()
     await db.refresh(db_msg)
 
-    # Broadcast the new message to any connected websocket clients so frontends can
-    # update in real time. Use the MessageOut DTO for consistent JSON shape.
+    # Broadcast the new message to any connected websocket clients
+    # so frontends can update in real time.
     try:
         message_out = MessageOut.model_validate(db_msg)
         await ws_manager.broadcast(message_out.model_dump_json())
     except Exception:
-        # broadcasting failure should not prevent API response; ignore errors here
+        # broadcasting failure should not prevent API response;
+        # ignore errors here
         pass
 
     return db_msg
