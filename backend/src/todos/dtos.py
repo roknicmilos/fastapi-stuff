@@ -22,11 +22,11 @@ class TodoCreate(BaseModel):
     )
 
     @validator("due_date")
-    def validate_due_date(cls, v):
+    def validate_due_date(cls, v: str) -> str:
         try:
             parsed_date = datetime.strptime(v, "%d.%m.%Y").date()
         except ValueError:
-            raise ValueError("Date must be in DD.MM.YYYY format")
+            raise ValueError("Date must be in DD.MM.YYYY format") from None
         if parsed_date <= date.today():
             raise ValueError("Due date must be in the future")
         return v

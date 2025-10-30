@@ -4,22 +4,23 @@ from fastapi import WebSocket, APIRouter, WebSocketDisconnect
 
 class WebSocketConnectionManager:
     """
-    Manages WebSocket connections and broadcasting messages to all connected clients.
+    Manages WebSocket connections and broadcasting
+    messages to all connected clients.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket) -> None:
         # Accept the websocket handshake explicitly when the endpoint runs.
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket: WebSocket) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str) -> None:
         # iterate over a copy to avoid mutation while sending
         for connection in list(self.active_connections):
             try:
@@ -40,7 +41,7 @@ router = APIRouter()
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket) -> None:
     """WebSocket endpoint that registers clients with the shared manager.
 
     Note: During the WebSocket handshake the browser will send an Origin header.

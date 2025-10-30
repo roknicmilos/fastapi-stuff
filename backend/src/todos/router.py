@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
@@ -21,7 +22,9 @@ redis = Redis.from_url(
 
 
 @router.get("/todos", response_model=list[TodoOut])
-async def list_todos(db: AsyncSession = Depends(get_async_db)):
+async def list_todos(
+    db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> list[Todo]:
     """Return all todos as a list of TodoOut models."""
     result = await db.execute(select(Todo).order_by(desc(Todo.created_at)))
     todos = result.scalars().all()
@@ -30,8 +33,8 @@ async def list_todos(db: AsyncSession = Depends(get_async_db)):
 
 @router.get("/todos/{todo_id}", response_model=TodoOut)
 async def get_expensive_todo(
-    todo_id: int, db: AsyncSession = Depends(get_async_db)
-):
+    todo_id: int, db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> Todo:
     cache_key = f"todo:{todo_id}"
     cached_todo = await redis.get(cache_key)
     if cached_todo:
@@ -53,8 +56,8 @@ async def get_expensive_todo(
 
 @router.post("/todos")
 async def create_todo(
-    todo: TodoCreate, db: AsyncSession = Depends(get_async_db)
-):
+    todo: TodoCreate, db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> Todo:
     due_date = datetime.strptime(todo.due_date, "%d.%m.%Y").date()
     db_todo = Todo(
         title=todo.title,

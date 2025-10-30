@@ -33,7 +33,7 @@ app.include_router(chat_router)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
-):
+) -> JSONResponse:
     errors = {}
     for error in exc.errors():
         field_name = error["loc"][-1]
@@ -48,5 +48,5 @@ async def validation_exception_handler(
 
 
 @app.get("/")
-def read_root():
+def read_root() -> dict[str, str]:
     return {"message": "hello world"}

@@ -22,7 +22,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 # Import Base from the shared base model (contains id and created_at)
-from src.models import Base
+from src.models import Base  # noqa: E402
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)

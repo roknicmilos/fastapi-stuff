@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -10,7 +11,9 @@ router = APIRouter()
 
 
 @router.get("/users", response_model=list[UserOut])
-async def list_users(db: AsyncSession = Depends(get_async_db)):
+async def list_users(
+    db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> list[User]:
     result = await db.execute(select(User).order_by(User.created_at))
     users = result.scalars().all()
     return users
@@ -18,8 +21,8 @@ async def list_users(db: AsyncSession = Depends(get_async_db)):
 
 @router.post("/users", response_model=UserOut)
 async def create_user(
-    user: UserCreate, db: AsyncSession = Depends(get_async_db)
-):
+    user: UserCreate, db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> User:
     # Ensure username is unique
     result = await db.execute(
         select(User).where(User.username == user.username)

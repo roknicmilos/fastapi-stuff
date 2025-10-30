@@ -7,7 +7,7 @@ class ConversationStart(BaseModel):
     user_b_id: int
 
     @model_validator(mode="after")
-    def users_must_be_different(self):
+    def users_must_be_different(self) -> "ConversationStart":
         # both fields are typed so None should not normally appear,
         # but keep an explicit check to provide a clear error message.
         if self.user_a_id is None or self.user_b_id is None:
@@ -36,7 +36,8 @@ class MessageOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# New model: conversation with nested messages (messages ordered newest->oldest)
+# Model representing a conversation with nested messages.
+# Messages are ordered newest -> oldest.
 class ConversationWithMessagesOut(BaseModel):
     id: int
     user_a_id: int
@@ -47,14 +48,15 @@ class ConversationWithMessagesOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# New DTO for creating a message: requires conversation_id, user_id, and non-empty text
+# New DTO for creating a message: requires conversation_id,
+# user_id, and non-empty text
 class MessageCreate(BaseModel):
     conversation_id: int
     user_id: int
     text: str
 
     @model_validator(mode="after")
-    def text_must_not_be_empty(self):
+    def text_must_not_be_empty(self) -> "MessageCreate":
         # strip whitespace and ensure not empty
         if not isinstance(self.text, str) or not self.text.strip():
             raise ValueError("text must be a non-empty string")

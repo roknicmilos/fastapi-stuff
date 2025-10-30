@@ -1,6 +1,8 @@
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import logging
 
 from src.database import get_async_db
 from src.chat.models import Conversation, Message
@@ -15,14 +17,15 @@ from src.users.models import User
 from src.ws import ws_manager
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/conversations", response_model=ConversationOut)
 async def start_conversation(
     conv: ConversationStart,
     response: Response,
-    db: AsyncSession = Depends(get_async_db),
-):
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+) -> Conversation:
     user_a_id, user_b_id = sorted([conv.user_a_id, conv.user_b_id])
 
     # Verify both users exist
@@ -62,8 +65,8 @@ async def start_conversation(
     "/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED
 )
 async def send_message(
-    msg: MessageCreate, db: AsyncSession = Depends(get_async_db)
-):
+    msg: MessageCreate, db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> Message:
     """Create a new message in a conversation.
 
     Validates that the conversation exists, the user exists,
@@ -103,16 +106,16 @@ async def send_message(
     try:
         message_out = MessageOut.model_validate(db_msg)
         await ws_manager.broadcast(message_out.model_dump_json())
-    except Exception:
-        # broadcasting failure should not prevent API response;
-        # ignore errors here
-        pass
+    except Exception as exc:  # log the exception instead of silently passing
+        logger.exception("Failed to broadcast message: %s", exc)
 
     return db_msg
 
 
 @router.get("/conversations", response_model=list[ConversationOut])
-async def list_conversations(db: AsyncSession = Depends(get_async_db)):
+async def list_conversations(
+    db: Annotated[AsyncSession, Depends(get_async_db)]
+) -> list[Conversation]:
     """Return all conversations."""
     result = await db.execute(select(Conversation))
     conversations = result.scalars().all()
@@ -123,12 +126,12 @@ async def list_conversations(db: AsyncSession = Depends(get_async_db)):
     "/conversations/by_users", response_model=ConversationWithMessagesOut
 )
 async def get_conversation_by_users(
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_a: str = Query(..., description="Username of the first user (user_a)"),
     user_b: str = Query(
         ..., description="Username of the second user (user_b)"
     ),
-    db: AsyncSession = Depends(get_async_db),
-):
+) -> ConversationWithMessagesOut:
     """
     Find a conversation by two usernames provided as separate query params.
     """
