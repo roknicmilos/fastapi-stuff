@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, String, Date
 from src.models import Base, BaseModel
+
 
 class Todo(Base, BaseModel):
     __tablename__ = "todos"

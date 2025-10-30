@@ -17,9 +17,13 @@ async def list_users(db: AsyncSession = Depends(get_async_db)):
 
 
 @router.post("/users", response_model=UserOut)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)):
+async def create_user(
+    user: UserCreate, db: AsyncSession = Depends(get_async_db)
+):
     # Ensure username is unique
-    result = await db.execute(select(User).where(User.username == user.username))
+    result = await db.execute(
+        select(User).where(User.username == user.username)
+    )
     existing = result.scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")

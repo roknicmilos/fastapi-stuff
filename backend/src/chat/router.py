@@ -21,13 +21,13 @@ router = APIRouter()
 async def start_conversation(
     conv: ConversationStart,
     response: Response,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ):
     user_a_id, user_b_id = sorted([conv.user_a_id, conv.user_b_id])
 
     # Verify both users exist
-    result = await db.execute(select(User).where(
-        User.id.in_([user_a_id, user_b_id]))
+    result = await db.execute(
+        select(User).where(User.id.in_([user_a_id, user_b_id]))
     )
     users = result.scalars().all()
     if len(users) != 2:
@@ -59,13 +59,10 @@ async def start_conversation(
 
 
 @router.post(
-    "/messages",
-    response_model=MessageOut,
-    status_code=status.HTTP_201_CREATED
+    "/messages", response_model=MessageOut, status_code=status.HTTP_201_CREATED
 )
 async def send_message(
-    msg: MessageCreate,
-    db: AsyncSession = Depends(get_async_db)
+    msg: MessageCreate, db: AsyncSession = Depends(get_async_db)
 ):
     """Create a new message in a conversation.
 
@@ -74,8 +71,8 @@ async def send_message(
     Returns the created Message (201).
     """
     # Verify conversation exists
-    result = await db.execute(select(Conversation).where(
-        Conversation.id == msg.conversation_id)
+    result = await db.execute(
+        select(Conversation).where(Conversation.id == msg.conversation_id)
     )
     conv = result.scalar_one_or_none()
     if conv is None:
@@ -91,13 +88,11 @@ async def send_message(
     if msg.user_id not in (conv.user_a_id, conv.user_b_id):
         raise HTTPException(
             status_code=403,
-            detail="User is not a participant in the conversation"
+            detail="User is not a participant in the conversation",
         )
 
     db_msg = Message(
-        conversation_id=msg.conversation_id,
-        user_id=msg.user_id,
-        text=msg.text
+        conversation_id=msg.conversation_id, user_id=msg.user_id, text=msg.text
     )
     db.add(db_msg)
     await db.commit()
@@ -128,13 +123,11 @@ async def list_conversations(db: AsyncSession = Depends(get_async_db)):
     "/conversations/by_users", response_model=ConversationWithMessagesOut
 )
 async def get_conversation_by_users(
-    user_a: str = Query(
-        ..., description="Username of the first user (user_a)"
-    ),
+    user_a: str = Query(..., description="Username of the first user (user_a)"),
     user_b: str = Query(
         ..., description="Username of the second user (user_b)"
     ),
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(get_async_db),
 ):
     """
     Find a conversation by two usernames provided as separate query params.
@@ -156,9 +149,9 @@ async def get_conversation_by_users(
 
     # Fetch messages for this conversation, newest first
     result = await db.execute(
-        select(Message).where(
-            Message.conversation_id == conversation.id
-        ).order_by(Message.created_at.desc())
+        select(Message)
+        .where(Message.conversation_id == conversation.id)
+        .order_by(Message.created_at.desc())
     )
     messages = result.scalars().all()
 

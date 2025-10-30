@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncSession,
-    async_sessionmaker
+    async_sessionmaker,
 )
 from sqlalchemy.orm import sessionmaker
 from typing import Generator, AsyncGenerator
@@ -12,19 +12,13 @@ SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
 ASYNC_SQLALCHEMY_DATABASE_URL = os.getenv("ASYNC_SQLALCHEMY_DATABASE_URL")
 
 # Sync engine (for existing code and migrations)
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Async engine
-async_engine = create_async_engine(
-    ASYNC_SQLALCHEMY_DATABASE_URL
-)
+async_engine = create_async_engine(ASYNC_SQLALCHEMY_DATABASE_URL)
 AsyncSessionLocal = async_sessionmaker(
-    bind=async_engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+    bind=async_engine, class_=AsyncSession, expire_on_commit=False
 )
 
 # Import Base from the shared base model (contains id and created_at)

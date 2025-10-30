@@ -43,10 +43,8 @@ async def validation_exception_handler(
         if field_name not in errors:
             errors[field_name] = []
         errors[field_name].append(error_msg)
-    return JSONResponse(
-        status_code=400,
-        content={"errors": errors}
-    )
+
+    return JSONResponse(status_code=400, content={"errors": errors})
 
 
 @app.get("/")

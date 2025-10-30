@@ -22,10 +22,16 @@ class Conversation(Base, BaseModel):
 class Message(Base, BaseModel):
     __tablename__ = "messages"
 
-    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    conversation_id = Column(
+        Integer, ForeignKey("conversations.id"), nullable=False, index=True
+    )
+    user_id = Column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
+    )
     text = Column(Text, nullable=False)
 
     # relationships
-    conversation = relationship("src.chat.models.Conversation", backref="messages")
+    conversation = relationship(
+        "src.chat.models.Conversation", backref="messages"
+    )
     user = relationship("src.users.models.User")

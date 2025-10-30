@@ -15,6 +15,42 @@ dependencies = [
 ]
 
 [project.dependency-groups]
-# Use dependency-groups.dev instead of tool.uv.dev-dependencies
-# This group is kept empty for now; add development-only deps here.
-dev = []
+# Development-only dependencies
+# Ruff is declared here; actual configuration is in this file under [tool.ruff].
+dev = [
+    "ruff>=0.15.0",
+]
+
+[tool.ruff]
+# Ruff configuration for the backend package (nearest config wins for files under backend/)
+line-length = 80
+target-version = "py311"
+
+# Exclude Alembic auto-generated revisions (ignore entire versions directory)
+exclude = ["alembic/versions/*"]
+
+[tool.ruff.lint]
+# Lint-related settings were moved here to satisfy newer ruff versions (deprecation fix)
+select = [
+  "E",
+  "F",
+  "W",
+  "C90",
+  "B",
+  "S",
+  "Q",
+]
+
+extend-select = [
+  "ANN",
+]
+
+ignore = [
+  "E203",
+]
+
+per-file-ignores = {"alembic/versions/*.py" = ["E", "F", "W", "ANN"]}
+
+[tool.ruff.format]
+# Use the TOML key compatible with older ruff versions used by the pre-commit hook
+quote-style = "double"

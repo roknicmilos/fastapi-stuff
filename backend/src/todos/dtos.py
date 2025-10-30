@@ -2,28 +2,23 @@ from pydantic import BaseModel, Field, validator
 from datetime import date, datetime
 from typing import Optional
 
+
 class TodoCreate(BaseModel):
     title: str = Field(
         ...,
         min_length=3,
         max_length=20,
-        description=(
-            "Title of the TODO task"
-        ),
+        description="Title of the TODO task",
     )
     description: Optional[str] = Field(
         None,
         min_length=3,
         max_length=100,
-        description=(
-            "Description of the TODO task"
-        ),
+        description="Description of the TODO task",
     )
     due_date: str = Field(
         ...,
-        description=(
-            "Due date in DD.MM.YYYY format"
-        ),
+        description="Due date in DD.MM.YYYY format",
     )
 
     @validator("due_date")
@@ -39,19 +34,13 @@ class TodoCreate(BaseModel):
 
 class TodoOut(BaseModel):
     """Pydantic model for outgoing Todo objects (response)."""
-    id: int = Field(
-        ..., description="Unique identifier of the TODO"
-    )
-    title: str = Field(
-        ..., description="Title of the TODO task"
-    )
+
+    id: int = Field(..., description="Unique identifier of the TODO")
+    title: str = Field(..., description="Title of the TODO task")
     description: Optional[str] = Field(
-        None,
-        description="Description of the TODO task"
+        None, description="Description of the TODO task"
     )
-    due_date: date = Field(
-        ..., description="Due date as a date object"
-    )
+    due_date: date = Field(..., description="Due date as a date object")
     created_at: datetime = Field(
         ..., description="Timestamp of when the TODO was created"
     )

@@ -6,6 +6,7 @@ class WebSocketConnectionManager:
     """
     Manages WebSocket connections and broadcasting messages to all connected clients.
     """
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 

@@ -11,16 +11,12 @@ from src.database import get_async_db
 from src.todos.models import Todo
 from src.todos.dtos import TodoCreate, TodoOut
 from src.ws import ws_manager
-from src.users.router import router as users_router
-from src.chat.router import router as chat_router
 
 router = APIRouter()
 
 # Redis client used for caching within the todos router
 redis = Redis.from_url(
-    os.getenv("REDIS_URL"),
-    encoding="utf-8",
-    decode_responses=True
+    os.getenv("REDIS_URL"), encoding="utf-8", decode_responses=True
 )
 
 
@@ -33,7 +29,9 @@ async def list_todos(db: AsyncSession = Depends(get_async_db)):
 
 
 @router.get("/todos/{todo_id}", response_model=TodoOut)
-async def get_expensive_todo(todo_id: int, db: AsyncSession = Depends(get_async_db)):
+async def get_expensive_todo(
+    todo_id: int, db: AsyncSession = Depends(get_async_db)
+):
     cache_key = f"todo:{todo_id}"
     cached_todo = await redis.get(cache_key)
     if cached_todo:
@@ -54,7 +52,9 @@ async def get_expensive_todo(todo_id: int, db: AsyncSession = Depends(get_async_
 
 
 @router.post("/todos")
-async def create_todo(todo: TodoCreate, db: AsyncSession = Depends(get_async_db)):
+async def create_todo(
+    todo: TodoCreate, db: AsyncSession = Depends(get_async_db)
+):
     due_date = datetime.strptime(todo.due_date, "%d.%m.%Y").date()
     db_todo = Todo(
         title=todo.title,
