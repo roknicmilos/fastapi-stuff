@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, validator
 from datetime import date, datetime
-from typing import Optional
+
+from pydantic import BaseModel, Field, validator
 
 
 class TodoCreate(BaseModel):
@@ -10,7 +10,7 @@ class TodoCreate(BaseModel):
         max_length=20,
         description="Title of the TODO task",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None,
         min_length=3,
         max_length=100,
@@ -37,7 +37,7 @@ class TodoOut(BaseModel):
 
     id: int = Field(..., description="Unique identifier of the TODO")
     title: str = Field(..., description="Title of the TODO task")
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Description of the TODO task"
     )
     due_date: date = Field(..., description="Due date as a date object")

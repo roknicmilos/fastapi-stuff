@@ -1,16 +1,17 @@
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
 import asyncio
 import json
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException
 from redis.asyncio import Redis
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_async_db
-from src.todos.models import Todo
 from src.todos.dtos import TodoCreate, TodoOut
+from src.todos.models import Todo
 from src.ws import ws_manager
 
 router = APIRouter()

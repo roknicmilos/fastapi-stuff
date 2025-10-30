@@ -1,18 +1,19 @@
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import logging
+from typing import Annotated
 
-from src.database import get_async_db
-from src.chat.models import Conversation, Message
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.chat.dtos import (
     ConversationOut,
     ConversationStart,
-    MessageOut,
     ConversationWithMessagesOut,
     MessageCreate,
+    MessageOut,
 )
+from src.chat.models import Conversation, Message
+from src.database import get_async_db
 from src.users.models import User
 from src.ws import ws_manager
 

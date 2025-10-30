@@ -1,11 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_async_db
-from src.users.models import User
 from src.users.dtos import UserCreate, UserOut
+from src.users.models import User
 
 router = APIRouter()
 

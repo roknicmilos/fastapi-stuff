@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import WebSocket, APIRouter, WebSocketDisconnect
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 
 class WebSocketConnectionManager:
@@ -9,7 +9,7 @@ class WebSocketConnectionManager:
     """
 
     def __init__(self) -> None:
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket) -> None:
         # Accept the websocket handshake explicitly when the endpoint runs.

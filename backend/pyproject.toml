@@ -23,7 +23,7 @@ dev = [
 [tool.ruff]
 line-length = 80
 target-version = "py311"
-exclude = ["alembic/versions/*"]
+exclude = ["alembic/versions/*", ".venv/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "I", "ANN"]
